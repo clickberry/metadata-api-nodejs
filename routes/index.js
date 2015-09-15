@@ -40,6 +40,11 @@ exports.error = function (err, req, res, next) {
         json: function () {
             res.send({ error: msg });
         },
+        xml: function () {
+            res.write('<error>\n');
+            res.write('    <message>' + msg + '</message>\n');
+            res.end('</error>\n');
+        },
         text: function () {
             res.send(msg + '\n');
         }
