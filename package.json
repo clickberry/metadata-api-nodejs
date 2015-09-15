@@ -1,0 +1,42 @@
+{
+  "name": "metadata-api-nodejs",
+  "version": "0.0.1",
+  "description": "Metadata API micro-service on Node.js",
+  "main": "app.js",
+  "dependencies": {
+    "aws-sdk": "^2.2.0",
+    "body-parser": "^1.12.4",
+    "debug": "^2.2.0",
+    "express": "^4.12.4",
+    "jade": "^1.11.0",
+    "morgan": "^1.6.0",
+    "multiparty": "^4.1.2",
+    "node-uuid": "^1.4.3",
+    "nodejs-model": "^0.1.6",
+    "passport": "^0.3.0",
+    "passport-jwt": "^1.1.1",
+    "redis": "^0.12.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node ./bin/www",
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clickberry/metadata-api-nodejs"
+  },
+  "keywords": [
+    "clickberry",
+    "webservices",
+    "node.js",
+    "metadata",
+    "video",
+    "api"
+  ],
+  "author": "Alexey Melnikov",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/clickberry/metadata-api-nodejs/issues"
+  }
+}
