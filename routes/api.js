@@ -1,7 +1,7 @@
 // env
 var bucket = process.env.S3_BUCKET;
-var maxFileSize = process.env.MAX_FILE_SIZE ? 
-  parseInt(process.env.MAX_FILE_SIZE) : 1024 * 1024 * 10; // 10MB by default
+var maxFileSize = process.env.MAX_FILE_SIZE ?
+      parseInt(process.env.MAX_FILE_SIZE, 10) : 1024 * 1024 * 10; // 10MB by default
 
 if (!process.env.S3_BUCKET) {
   console.log("S3_BUCKET environment variable required.");
@@ -64,12 +64,12 @@ router.post('/:id',
       var key = uuid.v4();
       var form = new multiparty.Form();
 
-      form.on('field', function(name, value) {
+      form.on('field', function (name, value) {
         if (name === 'attributes') {
           metadata.attributes = value;
         }
       });
-      form.on('part', function(part) {
+      form.on('part', function (part) {
         if (maxFileSize < part.byteCount) {
           return res.status(400).send({ message: 'File is too large.' });
         }
@@ -81,7 +81,7 @@ router.post('/:id',
           Body: part,
           ContentLength: part.byteCount,
           ContentType: part.headers['content-type']
-        }, function(err, data) {
+        }, function (err) {
           if (err) { return next(err); }
 
           var url = 'https://s3.amazonaws.com/' + bucket + '/' + key;
@@ -96,7 +96,7 @@ router.post('/:id',
             if (metadataModel.isValid) {
               metadata.save(function (err) {
                 if (err) { return next(err); }
-                
+
                 var json = formatJson(metadataModel.toJSON());
                 debug("Metadata created: " + JSON.stringify(json));
                 res.status(201).send(json);
@@ -171,34 +171,34 @@ router.put('/:id',
   });
 
 router.delete('/:id', function (req, res, next) {
-    Metadata.get(req.params.id, function (err, data) {
+  Metadata.get(req.params.id, function (err, data) {
+    if (err) { return next(err); }
+    if (!data) {
+      return res.status(404).send({ message: 'Resource not found' });
+    }
+
+    Metadata.del(req.params.id, function (err) {
       if (err) { return next(err); }
-      if (!data) {
-        return res.status(404).send({ message: 'Resource not found' });
-      }
 
-      Metadata.del(req.params.id, function (err) {
+      // delete file
+      var metadata = data;
+      var parsedUrl = url.parse(metadata.url);
+      var key = path.basename(parsedUrl.pathname);
+      s3.deleteObject({
+        Bucket: bucket,
+        Key: key,
+      }, function (err) {
         if (err) { return next(err); }
-        
-        // delete file
-        var metadata = data;
-        var parsedUrl = url.parse(metadata.url);
-        var key = path.basename(parsedUrl.pathname);
-        s3.deleteObject({
-          Bucket: bucket,
-          Key: key,
-        }, function(err, data) {
-          if (err) { return next(err); }
-          
-          var metadataModel = MetadataModel.create();
-          metadataModel.update(metadata);
-          var json = formatJson(metadataModel.toJSON());
 
-          debug("Metadata deleted: " + JSON.stringify(json));
-          res.send();
-        });
+        var metadataModel = MetadataModel.create();
+        metadataModel.update(metadata);
+        var json = formatJson(metadataModel.toJSON());
+
+        debug("Metadata deleted: " + JSON.stringify(json));
+        res.send();
       });
-    });    
+    });
   });
+});
 
 module.exports = router;
