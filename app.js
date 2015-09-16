@@ -2,6 +2,7 @@ var express = require('express');
 var path = require('path');
 var bodyParser = require('body-parser');
 var logger = require('morgan');
+var debug = require('debug')('clickberry:metadata:api');
 
 var routes = require('./routes');
 var api = require('./routes/api');

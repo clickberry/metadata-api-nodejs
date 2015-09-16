@@ -1,3 +1,13 @@
+// env
+var bucket = process.env.S3_BUCKET;
+var maxFileSize = process.env.MAX_FILE_SIZE ? 
+  parseInt(process.env.MAX_FILE_SIZE) : 1024 * 1024 * 10; // 10MB by default
+
+if (!process.env.S3_BUCKET) {
+  console.log("S3_BUCKET environment variable required.");
+  process.exit(1);
+}
+
 var url = require("url");
 var path = require("path");
 var express = require('express');
@@ -11,11 +21,6 @@ var multiparty = require('multiparty');
 var uuid = require('node-uuid');
 var AWS = require('aws-sdk');
 var s3 = new AWS.S3();
-
-// env
-var bucket = process.env.S3_BUCKET;
-var maxFileSize = process.env.MAX_FILE_SIZE ? 
-  parseInt(process.env.MAX_FILE_SIZE) : 1024 * 1024 * 10; // 10MB by default
 
 function isFormData(req) {
   var type = req.headers['content-type'] || '';
