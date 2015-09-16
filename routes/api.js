@@ -1,7 +1,7 @@
 // env
 var bucket = process.env.S3_BUCKET;
 var maxFileSize = process.env.MAX_FILE_SIZE ?
-      parseInt(process.env.MAX_FILE_SIZE, 10) : 1024 * 1024 * 10; // 10MB by default
+      parseInt(process.env.MAX_FILE_SIZE, 10) : 1024 * 1024; // 1MB by default
 
 if (!process.env.S3_BUCKET) {
   console.log("S3_BUCKET environment variable required.");
@@ -70,6 +70,7 @@ router.post('/:id',
         }
       });
       form.on('part', function (part) {
+        debug("Uploading part with size: " + part.byteCount);
         if (maxFileSize < part.byteCount) {
           return res.status(400).send({ message: 'File is too large.' });
         }
@@ -151,22 +152,82 @@ router.put('/:id',
         attributes: req.body.attributes
       });
 
-      // todo: update file
+      if (isFormData(req)) {
+        // replace file
+        var form = new multiparty.Form();
 
-      // validate model
-      var metadataModel = MetadataModel.create();
-      metadataModel.update(data, '*');
+        form.on('field', function (name, value) {
+          if (name === 'attributes') {
+            metadata.attributes = value;
+          }
+        });
+        form.on('part', function (part) {
+          debug("Uploading part with size: " + part.byteCount);
+          if (maxFileSize < part.byteCount) {
+            return res.status(400).send({ message: 'File is too large.' });
+          }
 
-      metadataModel.validate().then(function () {
-        if (metadataModel.isValid) {
-          metadata.update(function (err) {
+          var key = uuid.v4();
+          s3.putObject({
+            Bucket: bucket,
+            Key: key,
+            ACL: 'public-read',
+            Body: part,
+            ContentLength: part.byteCount,
+            ContentType: part.headers['content-type']
+          }, function (err) {
             if (err) { return next(err); }
-            res.send();
+
+            var url = 'https://s3.amazonaws.com/' + bucket + '/' + key;
+            debug("Metadata file uploaded to " + url);
+
+            // validate model
+            metadata.url = url;
+            var metadataModel = MetadataModel.create();
+            metadataModel.update(metadata, '*');
+
+            metadataModel.validate().then(function () {
+              if (metadataModel.isValid) {
+                metadata.update(function (err) {
+                  if (err) { return next(err); }
+
+                  var json = formatJson(metadataModel.toJSON());
+                  debug("Metadata updated: " + JSON.stringify(json));
+                  res.status(200).send(json);
+                });
+              } else {
+                res.status(400).send({ errors: metadataModel.errors });
+              }
+            });
           });
-        } else {
-          res.status(400).send({ errors: metadataModel.errors });
-        }
-      });
+        });
+        form.on('error', function (err) {
+          return next(err);
+        });
+
+        form.parse(req);
+      } else {
+        // json request
+
+        // validate model
+        var metadataModel = MetadataModel.create();
+        metadataModel.update(metadata, '*');
+
+        metadataModel.validate().then(function () {
+          if (metadataModel.isValid) {
+            metadata.update(function (err) {
+              if (err) { return next(err); }
+
+              var json = formatJson(metadataModel.toJSON());
+              debug("Metadata updated: " + JSON.stringify(json));
+              res.status(200).send(json);
+              res.send();
+            });
+          } else {
+            res.status(400).send({ errors: metadataModel.errors });
+          }
+        });
+      }
     });
   });
 
