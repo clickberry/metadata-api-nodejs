@@ -8,10 +8,14 @@ var debug = require('debug')('clickberry:metadata:api');
 var passport = require('passport');
 //require('../config/jwt')(passport);
 var multiparty = require('multiparty');
+var uuid = require('node-uuid');
 var AWS = require('aws-sdk');
 var s3 = new AWS.S3();
+
+// env
 var bucket = process.env.S3_BUCKET;
-var uuid = require('node-uuid');
+var maxFileSize = process.env.MAX_FILE_SIZE ? 
+  parseInt(process.env.MAX_FILE_SIZE) : 1024 * 1024 * 10; // 10MB by default
 
 function isFormData(req) {
   var type = req.headers['content-type'] || '';
@@ -61,6 +65,10 @@ router.post('/:id',
         }
       });
       form.on('part', function(part) {
+        if (maxFileSize < part.byteCount) {
+          return res.status(400).send({ message: 'File is too large.' });
+        }
+
         s3.putObject({
           Bucket: bucket,
           Key: key,
