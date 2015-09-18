@@ -83,5 +83,22 @@ Updates metadata.
 | StatusCode | 200                                                                |
 | Body       | { "id": *id*, ... } |
 
+## DELETE /{id}
+Deletes metadata.
+
+### Request
+| Header   | Value |
+|----------|-------------|
+| Authorization     | JWT [accessToken] |
+
+| Query String   | Value |
+|----------|-------------|
+| relation_token     | JWT [relationToken] with payload: { id: *object_id*, ownerId: *user_id* } |
+
+### Response
+| HTTP       |  Value                                                             |
+|------------|--------------------------------------------------------------------|
+| StatusCode | 200                                                                |
+
 # License
 Source code is under GNU GPL v3 [license](LICENSE).
