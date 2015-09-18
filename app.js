@@ -4,7 +4,7 @@ var maxJsonSize = process.env.MAX_JSON_SIZE ?
 
 var express = require('express');
 var path = require('path');
-var json = require('body-parser').json({ limit: maxJsonSize });
+var bodyParser = require('body-parser');
 var logger = require('morgan');
 var debug = require('debug')('clickberry:metadata:api');
 
@@ -24,7 +24,8 @@ if (app.get('env') === 'development') {
   app.use(logger());
 }
 
-app.use(json);
+app.use(bodyParser.json({ limit: maxJsonSize }));
+app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use('/', api);
 

@@ -1,30 +1,25 @@
-// env
-if (!process.env.REDIS_ADDRESS) {
-  console.log("REDIS_ADDRESS environment variable required.");
-  process.exit(1);
-}
-
 var url = require("url");
 var path = require("path");
 var debug = require('debug')('clickberry:metadata:api');
-var passport = require('passport');
-//require('../config/jwt')(passport);
+var Metadata = require('../lib/metadata');
+var permissions = require('../middleware/permissions');
+
 var express = require('express');
 var router = express.Router();
-var Metadata = require('../lib/metadata');
+
+// passport
+var passport = require('passport');
+require('../config/jwt')(passport);
 
 router.get('/heartbeat', function (req, res) {
   res.send();
 });
 
 router.post('/:id',
-  //passport.authenticate('access-token', { session: false, assignProperty: 'payload' }),
+  passport.authenticate('access-token', { session: false, assignProperty: 'payload' }),
+  permissions.extractPayload('relation_token', 'relation'),
+  permissions.checkOwner('payload', 'relation', 'id'),
   function (req, res, next) {
-    // if (req.payload.userId !== req.params.ownerId ||
-    //     req.payload.objectId !== req.params.id) {
-    //       return res.status(403).send();
-    // }
-
     Metadata.get(req.params.id, function (err, data) {
       if (err) { return next(err); }
       if (data) {
@@ -53,13 +48,10 @@ router.get('/:id',
   });
 
 router.put('/:id',
-  //passport.authenticate('access-token', { session: false, assignProperty: 'payload' }),
+  passport.authenticate('access-token', { session: false, assignProperty: 'payload' }),
+  permissions.extractPayload('relation_token', 'relation'),
+  permissions.checkOwner('payload', 'relation', 'id'),
   function (req, res, next) {
-    /*if (req.payload.userId !== req.params.ownerId ||
-          req.payload.objectId !== req.params.id) {
-      return res.status(403).send();
-    }*/
-
     Metadata.get(req.params.id, function (err, data) {
       if (err) { return next(err); }
       if (!data) {
@@ -76,19 +68,23 @@ router.put('/:id',
     });
   });
 
-router.delete('/:id', function (req, res, next) {
-  Metadata.get(req.params.id, function (err, data) {
-    if (err) { return next(err); }
-    if (!data) {
-      return res.status(404).send({ message: 'Resource not found' });
-    }
-
-    Metadata.del(req.params.id, function (err) {
+router.delete('/:id',
+  passport.authenticate('access-token', { session: false, assignProperty: 'payload' }),
+  permissions.extractPayload('relation_token', 'relation'),
+  permissions.checkOwner('payload', 'relation', 'id'),
+  function (req, res, next) {
+    Metadata.get(req.params.id, function (err, data) {
       if (err) { return next(err); }
-      debug("Metadata deleted: " + JSON.stringify(data));
-      res.send();
+      if (!data) {
+        return res.status(404).send({ message: 'Resource not found' });
+      }
+
+      Metadata.del(req.params.id, function (err) {
+        if (err) { return next(err); }
+        debug("Metadata deleted: " + JSON.stringify(data));
+        res.send();
+      });
     });
   });
-});
 
 module.exports = router;
