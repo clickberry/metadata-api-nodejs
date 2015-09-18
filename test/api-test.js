@@ -3,12 +3,10 @@ var request = require('supertest');
 var assert = require('assert');
 var uuid = require('node-uuid');
 
-function createItem(id, attrs, fn) {
+function createItem(id, json, fn) {
   request(app)
     .post('/' + id)
-    .timeout(5000)
-    .field('attributes', JSON.stringify(attrs))
-    .attach('avatar', 'test/files/test.json')
+    .send(json)
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
     .expect(201)
@@ -45,7 +43,7 @@ describe('POST /', function () {
     });
   });
 
-  it('trying to query by id and should receive the same metadata', function (done) {
+  it('query by id', function (done) {
     request(app)
       .get('/' + metadata.id)
       .set('Accept', 'application/json')
@@ -55,34 +53,41 @@ describe('POST /', function () {
 });
 
 describe('PUT /', function () {
-  var metadata = {};
-  var attrs = { 'prop1': 'val1', 'prop2': 'val2' };
+  var json = { 'prop1': 'val1', 'prop2': 'val2' };
 
   after(function (done) {
     request(app)
-      .del('/' + metadata.id)
+      .del('/' + json.id)
       .expect(200)
       .end(done);
   });
 
   it('create metadata', function (done) {
     var id = uuid.v4();
-    createItem(id, attrs, function (err, data) {
+    createItem(id, json, function (err, data) {
       if (err) { return done(err); }
-      metadata = data;
+      json = data;
       done();
     });
   });
 
-  it('updating only metadata properties', function (done) {
-    attrs.prop1 = "newval1";
-    metadata.attributes = attrs;
+  it('updating metadata', function (done) {
+    json.prop1 = "newval1";
     request(app)
-      .put('/' + metadata.id)
-      .send({ attributes: attrs })
+      .put('/' + json.id)
+      .send(json)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(metadata, done);
+      .expect(200)
+      .end(done);
+  });
+
+  it('get updated metadata', function (done) {
+    request(app)
+      .get('/' + json.id)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(json, done);
   });
 });
 

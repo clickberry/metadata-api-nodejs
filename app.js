@@ -1,6 +1,10 @@
+// env
+var maxJsonSize = process.env.MAX_JSON_SIZE ?
+      parseInt(process.env.MAX_JSON_SIZE, 10) : 1024 * 10; // 10KB by default
+
 var express = require('express');
 var path = require('path');
-var bodyParser = require('body-parser');
+var json = require('body-parser').json({ limit: maxJsonSize });
 var logger = require('morgan');
 var debug = require('debug')('clickberry:metadata:api');
 
@@ -20,8 +24,7 @@ if (app.get('env') === 'development') {
   app.use(logger());
 }
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(json);
 
 app.use('/', api);
 
