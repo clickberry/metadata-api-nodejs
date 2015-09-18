@@ -43,6 +43,16 @@ describe('POST /', function () {
     });
   });
 
+  it('update unexisting id', function (done) {
+    request(app)
+      .post('/' + metadata.id)
+      .send({})
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(409)
+      .end(done);
+  });
+
   it('query by id', function (done) {
     request(app)
       .get('/' + metadata.id)
@@ -71,7 +81,17 @@ describe('PUT /', function () {
     });
   });
 
-  it('updating metadata', function (done) {
+  it('update unexisting id', function (done) {
+    request(app)
+      .put('/' + uuid.v4())
+      .send(json)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(404)
+      .end(done);
+  });
+
+  it('update metadata', function (done) {
     json.prop1 = "newval1";
     request(app)
       .put('/' + json.id)
