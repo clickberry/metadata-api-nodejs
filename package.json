@@ -1,6 +1,6 @@
 {
   "name": "metadata-api-nodejs",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Metadata API micro-service on Node.js",
   "main": "app.js",
   "dependencies": {
