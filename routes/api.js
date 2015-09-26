@@ -26,12 +26,15 @@ router.post('/:id',
         return res.status(409).send({ message: 'Conflict. Metadata is already exists!' });
       }
 
-      var metadata = new Metadata(req.body);
+      var json = req.body;
+      var metadata = new Metadata({ json: JSON.stringify(json) });
       metadata.id = req.params.id;
       metadata.save(function (err) {
         if (err) { return next(err); }
-        debug("Metadata created: " + JSON.stringify(metadata));
-        res.status(201).send(metadata);
+        var result = json;
+        result.id = metadata.id;
+        debug("Metadata created: " + JSON.stringify(result));
+        res.status(201).send(result);
       });
     });
   });
@@ -43,7 +46,10 @@ router.get('/:id',
       if (!data) {
         return res.status(404).send({ message: 'Resource not found' });
       }
-      res.json(data);
+
+      var json = JSON.parse(data.json);
+      json.id = req.params.id;
+      res.json(json);
     });
   });
 
@@ -58,12 +64,15 @@ router.put('/:id',
         return res.status(404).send({ message: 'Resource not found' });
       }
 
-      var metadata = new Metadata(req.body);
+      var json = req.body;
+      var metadata = new Metadata({ json: JSON.stringify(json) });
       metadata.id = req.params.id;
       metadata.update(function (err) {
         if (err) { return next(err); }
-        debug("Metadata updated: " + JSON.stringify(metadata));
-        res.send(metadata);
+        var result = json;
+        result.id = metadata.id;
+        debug("Metadata updated: " + JSON.stringify(result));
+        res.send(result);
       });
     });
   });
@@ -81,7 +90,9 @@ router.delete('/:id',
 
       Metadata.del(req.params.id, function (err) {
         if (err) { return next(err); }
-        debug("Metadata deleted: " + JSON.stringify(data));
+        var result = JSON.parse(data.json);
+        result.id = req.params.id;
+        debug("Metadata deleted: " + JSON.stringify(result));
         res.send();
       });
     });

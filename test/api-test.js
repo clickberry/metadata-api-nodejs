@@ -123,6 +123,39 @@ describe('POST /', function () {
   });
 });
 
+describe('POST Complex Object /', function () {
+  var metadata = {};
+  var metadata_auth_token;
+  var metadata_relation_token;
+
+  after(function (done) {
+    request(app)
+      .del('/' + metadata.id + '?auth_token=' + metadata_auth_token + '&relation_token=' + metadata_relation_token)
+      .expect(200, done);
+  });
+
+  it('create metadata', function (done) {
+    var id = uuid.v4();
+    var complex_object = { 'prop1': 'val1', 'prop2': { 'inner_prop1': 'inner_val1' }, 'prop3': [ 'a', 'b', 'c' ] };
+    createItem(id, complex_object, function (err, data) {
+      if (err) { return done(err); }
+      metadata = data.body;
+      metadata_auth_token = data.auth_token;
+      metadata_relation_token = data.relation_token;
+      done();
+    });
+  });
+
+  it('query by id', function (done) {
+    request(app)
+      .get('/' + metadata.id)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(metadata, done);
+  });
+
+});
+
 describe('PUT /', function () {
   var metadata = { 'prop1': 'val1', 'prop2': 'val2' };
   var metadata_auth_token;
