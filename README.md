@@ -46,7 +46,7 @@ Adds metadata for object id.
 | Authorization     | JWT [accessToken] |
 | Content-Type      | application/json |
 
-| Query String   | Value |
+| Query Param   | Value |
 |----------|-------------|
 | relation_token     | JWT [relationToken] with payload: { id: *object_id*, ownerId: *user_id* } |
 
