@@ -1,10 +1,11 @@
 {
   "name": "metadata-api-nodejs",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "Metadata API micro-service on Node.js",
   "main": "app.js",
   "dependencies": {
     "body-parser": "^1.12.4",
+    "cors": "^2.7.1",
     "debug": "^2.2.0",
     "express": "^4.12.4",
     "jade": "^1.11.0",
