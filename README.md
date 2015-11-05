@@ -57,7 +57,7 @@ Adds metadata for object id.
 ### Response
 | HTTP       | Value     |
 |------------|-----------|
-| StatusCode | 200       |
+| StatusCode | 201       |
 | Body       | { "id": *id*, ... } |
 
 ## PUT /{id}
