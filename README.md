@@ -24,7 +24,7 @@ REDIS_ADDRESS | redis.yourdomain.com | Redis server address.
 REDIS_PORT | 6379 | Redis server port.
 TOKEN_ACCESSSECRET | MDdDRDhBOD*** | Access token secret.
 TOKEN_RELATIONSECRET | RkY5MTREMz*** | Relation token secret.
-MAX_JSON_SIZE | 10240 | Maximum JSON size in bytes.
+MAX_JSON_SIZE | 10240 | Maximum JSON size in bytes (10KB by default).
 
 # API
 
