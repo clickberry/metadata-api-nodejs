@@ -13,4 +13,4 @@ fi
 echo "USING REDIS: ${REDIS_ADDRESS}:${REDIS_PORT}"
 
 # execute nodejs application
-exec /nodejs/bin/npm start
+exec npm start
