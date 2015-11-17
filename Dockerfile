@@ -1,4 +1,4 @@
-FROM google/nodejs-runtime
+FROM node:5-onbuild
 MAINTAINER Alexey Melnikov <a.melnikov@clickberry.com>
 
 # prepare env vars and run nodejs
