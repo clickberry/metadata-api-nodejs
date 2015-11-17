@@ -7,6 +7,10 @@ if (!process.env.TOKEN_RELATIONSECRET) {
   console.log("TOKEN_RELATIONSECRET environment variable required.");
   process.exit(1);
 }
+if (!process.env.REDIS_ADDRESS) {
+  console.log("REDIS_ADDRESS environment variable required.");
+  process.exit(1);
+}
 
 var app = require('..');
 var request = require('supertest');
